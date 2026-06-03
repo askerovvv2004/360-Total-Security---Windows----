@@ -1,30 +1,30 @@
 <#
 .SYNOPSIS
-    Полная очистка системы от остатков 360 Total Security.
+    РџРѕР»РЅР°СЏ РѕС‡РёСЃС‚РєР° СЃРёСЃС‚РµРјС‹ РѕС‚ РѕСЃС‚Р°С‚РєРѕРІ 360 Total Security.
 .DESCRIPTION
-    - Удаляет папки 360 из Program Files, ProgramData, AppData.
-    - Удаляет ключи реестра 360, включая пункт в меню Корзины.
-    - Удаляет службы 360 и записи автозагрузки.
-    - Очищает временные файлы, корзину, кэш эскизов.
+    - РЈРґР°Р»СЏРµС‚ РїР°РїРєРё 360 РёР· Program Files, ProgramData, AppData.
+    - РЈРґР°Р»СЏРµС‚ РєР»СЋС‡Рё СЂРµРµСЃС‚СЂР° 360, РІРєР»СЋС‡Р°СЏ РїСѓРЅРєС‚ РІ РјРµРЅСЋ РљРѕСЂР·РёРЅС‹.
+    - РЈРґР°Р»СЏРµС‚ СЃР»СѓР¶Р±С‹ 360 Рё Р·Р°РїРёСЃРё Р°РІС‚РѕР·Р°РіСЂСѓР·РєРё.
+    - РћС‡РёС‰Р°РµС‚ РІСЂРµРјРµРЅРЅС‹Рµ С„Р°Р№Р»С‹, РєРѕСЂР·РёРЅСѓ, РєСЌС€ СЌСЃРєРёР·РѕРІ.
 .NOTES
-    Требует прав администратора. Автоматически создаёт резервную копию реестра.
+    РўСЂРµР±СѓРµС‚ РїСЂР°РІ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°. РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё СЃРѕР·РґР°С‘С‚ СЂРµР·РµСЂРІРЅСѓСЋ РєРѕРїРёСЋ СЂРµРµСЃС‚СЂР°.
 #>
 
-# Запрос прав администратора
+# Р—Р°РїСЂРѕСЃ РїСЂР°РІ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Host "Запустите PowerShell от имени администратора!" -ForegroundColor Red
+    Write-Host "Р—Р°РїСѓСЃС‚РёС‚Рµ PowerShell РѕС‚ РёРјРµРЅРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°!" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "=== ПОЛНАЯ ОЧИСТКА ПОСЛЕ 360 TOTAL SECURITY ===" -ForegroundColor Cyan
+Write-Host "=== РџРћР›РќРђРЇ РћР§РРЎРўРљРђ РџРћРЎР›Р• 360 TOTAL SECURITY ===" -ForegroundColor Cyan
 
-# --- 0. Резервная копия реестра ---
+# --- 0. Р РµР·РµСЂРІРЅР°СЏ РєРѕРїРёСЏ СЂРµРµСЃС‚СЂР° ---
 $backupPath = "$env:USERPROFILE\Desktop\RegistryBackup_360_$(Get-Date -Format 'yyyyMMdd_HHmmss').reg"
-Write-Host "Создаю резервную копию реестра: $backupPath" -ForegroundColor Yellow
+Write-Host "РЎРѕР·РґР°СЋ СЂРµР·РµСЂРІРЅСѓСЋ РєРѕРїРёСЋ СЂРµРµСЃС‚СЂР°: $backupPath" -ForegroundColor Yellow
 Start-Process -FilePath "regedit.exe" -ArgumentList "/e `"$backupPath`"" -Wait -NoNewWindow
-Write-Host "Резервная копия создана." -ForegroundColor Green
+Write-Host "Р РµР·РµСЂРІРЅР°СЏ РєРѕРїРёСЏ СЃРѕР·РґР°РЅР°." -ForegroundColor Green
 
-# --- 1. Удаление папок 360 (расширенный список) ---
+# --- 1. РЈРґР°Р»РµРЅРёРµ РїР°РїРѕРє 360 (СЂР°СЃС€РёСЂРµРЅРЅС‹Р№ СЃРїРёСЃРѕРє) ---
 $pathsToDelete = @(
     "$env:ProgramFiles\360",
     "${env:ProgramFiles(x86)}\360",
@@ -41,14 +41,14 @@ $pathsToDelete = @(
 
 foreach ($path in $pathsToDelete) {
     if (Test-Path $path) {
-        Write-Host "Удаляю папку: $path" -ForegroundColor Yellow
+        Write-Host "РЈРґР°Р»СЏСЋ РїР°РїРєСѓ: $path" -ForegroundColor Yellow
         Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue
     } else {
-        Write-Host "Папка не найдена: $path" -ForegroundColor Gray
+        Write-Host "РџР°РїРєР° РЅРµ РЅР°Р№РґРµРЅР°: $path" -ForegroundColor Gray
     }
 }
 
-# --- 2. Удаление ключей реестра 360 (включая пункт Корзины) ---
+# --- 2. РЈРґР°Р»РµРЅРёРµ РєР»СЋС‡РµР№ СЂРµРµСЃС‚СЂР° 360 (РІРєР»СЋС‡Р°СЏ РїСѓРЅРєС‚ РљРѕСЂР·РёРЅС‹) ---
 $regPaths = @(
     "HKCU:\Software\360",
     "HKLM:\SOFTWARE\360",
@@ -58,20 +58,20 @@ $regPaths = @(
     "HKLM:\SOFTWARE\WOW6432Node\Qihoo",
     "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\MenuOrder\Start Menu\Programs\360 Total Security",
     "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\360*",
-    # Специальный ключ для меню Корзины
-    "Registry::HKEY_CLASSES_ROOT\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}\shell\LОчистка"
+    # РЎРїРµС†РёР°Р»СЊРЅС‹Р№ РєР»СЋС‡ РґР»СЏ РјРµРЅСЋ РљРѕСЂР·РёРЅС‹
+    "Registry::HKEY_CLASSES_ROOT\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}\shell\LРћС‡РёСЃС‚РєР°"
 )
 
 foreach ($regPath in $regPaths) {
     if (Test-Path $regPath) {
-        Write-Host "Удаляю ключ реестра: $regPath" -ForegroundColor Yellow
+        Write-Host "РЈРґР°Р»СЏСЋ РєР»СЋС‡ СЂРµРµСЃС‚СЂР°: $regPath" -ForegroundColor Yellow
         Remove-Item -Path $regPath -Recurse -Force -ErrorAction SilentlyContinue
     } else {
-        Write-Host "Ключ не найден: $regPath" -ForegroundColor Gray
+        Write-Host "РљР»СЋС‡ РЅРµ РЅР°Р№РґРµРЅ: $regPath" -ForegroundColor Gray
     }
 }
 
-# --- 3. Удаление служб 360, QH, QHSafe, QHActiveDefense ---
+# --- 3. РЈРґР°Р»РµРЅРёРµ СЃР»СѓР¶Р± 360, QH, QHSafe, QHActiveDefense ---
 $servicePatterns = @("360", "QH", "QHSafe", "QHActiveDefense", "Zhudongfangyu")
 $services = Get-Service | Where-Object { 
     $name = $_.Name
@@ -83,18 +83,18 @@ $services = Get-Service | Where-Object {
 }
 
 if ($services) {
-    Write-Host "Найдены потенциальные службы 360:" -ForegroundColor Yellow
+    Write-Host "РќР°Р№РґРµРЅС‹ РїРѕС‚РµРЅС†РёР°Р»СЊРЅС‹Рµ СЃР»СѓР¶Р±С‹ 360:" -ForegroundColor Yellow
     $services | ForEach-Object { Write-Host "  - $($_.Name) : $($_.DisplayName)" }
-    Write-Host "Останавливаю и удаляю..." -ForegroundColor Yellow
+    Write-Host "РћСЃС‚Р°РЅР°РІР»РёРІР°СЋ Рё СѓРґР°Р»СЏСЋ..." -ForegroundColor Yellow
     $services | ForEach-Object {
         Stop-Service $_.Name -Force -ErrorAction SilentlyContinue
         sc.exe delete $_.Name
     }
 } else {
-    Write-Host "Служб 360 не найдено." -ForegroundColor Gray
+    Write-Host "РЎР»СѓР¶Р± 360 РЅРµ РЅР°Р№РґРµРЅРѕ." -ForegroundColor Gray
 }
 
-# --- 4. Очистка автозагрузки ---
+# --- 4. РћС‡РёСЃС‚РєР° Р°РІС‚РѕР·Р°РіСЂСѓР·РєРё ---
 $runPaths = @(
     "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
     "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run",
@@ -106,15 +106,15 @@ foreach ($runPath in $runPaths) {
         $values = Get-ItemProperty -Path $runPath
         foreach ($valueName in $values.PSObject.Properties.Name) {
             if ($valueName -match "360|qihoo|total security|zhudong") {
-                Write-Host "Удаляю автозагрузку: $runPath\$valueName" -ForegroundColor Yellow
+                Write-Host "РЈРґР°Р»СЏСЋ Р°РІС‚РѕР·Р°РіСЂСѓР·РєСѓ: $runPath\$valueName" -ForegroundColor Yellow
                 Remove-ItemProperty -Path $runPath -Name $valueName -Force -ErrorAction SilentlyContinue
             }
         }
     }
 }
 
-# --- 5. Очистка временных файлов ---
-Write-Host "`n=== Очистка временных файлов ===" -ForegroundColor Cyan
+# --- 5. РћС‡РёСЃС‚РєР° РІСЂРµРјРµРЅРЅС‹С… С„Р°Р№Р»РѕРІ ---
+Write-Host "`n=== РћС‡РёСЃС‚РєР° РІСЂРµРјРµРЅРЅС‹С… С„Р°Р№Р»РѕРІ ===" -ForegroundColor Cyan
 
 $tempFolders = @(
     "$env:TEMP",
@@ -124,26 +124,26 @@ $tempFolders = @(
 
 foreach ($folder in $tempFolders) {
     if (Test-Path $folder) {
-        Write-Host "Очищаю: $folder" -ForegroundColor Yellow
+        Write-Host "РћС‡РёС‰Р°СЋ: $folder" -ForegroundColor Yellow
         Get-ChildItem -Path $folder -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
 
-# --- 6. Очистка корзины ---
-Write-Host "Очищаю корзину..." -ForegroundColor Yellow
+# --- 6. РћС‡РёСЃС‚РєР° РєРѕСЂР·РёРЅС‹ ---
+Write-Host "РћС‡РёС‰Р°СЋ РєРѕСЂР·РёРЅСѓ..." -ForegroundColor Yellow
 $Recycler = New-Object -ComObject Shell.Application
 $Recycler.NameSpace(0x0a).Items() | ForEach-Object { Remove-Item $_.Path -Recurse -Force -ErrorAction SilentlyContinue }
 
-<# --- 7. Очистка кэша эскизов ---
-Write-Host "Очищаю кэш эскизов..." -ForegroundColor Yellow
+<# --- 7. РћС‡РёСЃС‚РєР° РєСЌС€Р° СЌСЃРєРёР·РѕРІ ---
+Write-Host "РћС‡РёС‰Р°СЋ РєСЌС€ СЌСЃРєРёР·РѕРІ..." -ForegroundColor Yellow
 ie4uinit.exe -ClearIconCache
 Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\Windows\Explorer\thumbcache_*.db" -Force -ErrorAction SilentlyContinue
 #>
 
-# --- 8. Запуск стандартной очистки диска ---
-Write-Host "Запускаю очистку диска (cleanmgr)..." -ForegroundColor Yellow
+# --- 8. Р—Р°РїСѓСЃРє СЃС‚Р°РЅРґР°СЂС‚РЅРѕР№ РѕС‡РёСЃС‚РєРё РґРёСЃРєР° ---
+Write-Host "Р—Р°РїСѓСЃРєР°СЋ РѕС‡РёСЃС‚РєСѓ РґРёСЃРєР° (cleanmgr)..." -ForegroundColor Yellow
 Start-Process -FilePath "cleanmgr.exe" -ArgumentList "/verylowdisk" -Wait -NoNewWindow
 
-Write-Host "`n=== ОЧИСТКА ЗАВЕРШЕНА! ===" -ForegroundColor Green
-Write-Host "Резервная копия реестра сохранена на рабочем столе: $backupPath" -ForegroundColor Cyan
-Write-Host "Перезагрузите компьютер для полного применения изменений." -ForegroundColor Yellow
+Write-Host "`n=== РћР§РРЎРўРљРђ Р—РђР’Р•Р РЁР•РќРђ! ===" -ForegroundColor Green
+Write-Host "Р РµР·РµСЂРІРЅР°СЏ РєРѕРїРёСЏ СЂРµРµСЃС‚СЂР° СЃРѕС…СЂР°РЅРµРЅР° РЅР° СЂР°Р±РѕС‡РµРј СЃС‚РѕР»Рµ: $backupPath" -ForegroundColor Cyan
+Write-Host "РџРµСЂРµР·Р°РіСЂСѓР·РёС‚Рµ РєРѕРјРїСЊСЋС‚РµСЂ РґР»СЏ РїРѕР»РЅРѕРіРѕ РїСЂРёРјРµРЅРµРЅРёСЏ РёР·РјРµРЅРµРЅРёР№." -ForegroundColor Yellow
